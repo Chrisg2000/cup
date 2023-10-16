@@ -1,0 +1,26 @@
+name: CUP Binaries
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+      - uses: cedx/setup-ant@v1
+      - name: Run ant
+        run: |
+          ant -version
+          ant clean
+          ant dist
+      - name: Upload binaries
+        uses: actions/upload-artifact@v3
+        with:
+          name: cup.zip
+          path: |
+            target/dist/java-cup-*.jar
+            target/dist/java-cup-*.tar.gz
