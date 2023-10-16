@@ -1331,6 +1331,7 @@ public abstract class lr_parser {
   /*-----------------------------------------------------------*/
 
   /** Utility function: unpacks parse tables from strings */
+  @Deprecated
   protected static short[][] unpackFromStrings(String[] sa) {
     // Concatanate initialization strings.
     StringBuffer sb = new StringBuffer(sa[0]);
@@ -1349,4 +1350,6 @@ public abstract class lr_parser {
     }
     return result;
   }
+
+  // protected static short[][] unpackFrom
 }

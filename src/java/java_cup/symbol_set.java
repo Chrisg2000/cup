@@ -90,7 +90,7 @@ public class symbol_set implements Iterable<symbol> {
     not_null(other);
 
     /* walk down our set and make sure every element is in the other */
-    for (var e : this)
+    for (symbol e : this)
       if (!other.contains(e))
         return false;
     /* they were all there */
@@ -155,7 +155,7 @@ public class symbol_set implements Iterable<symbol> {
     not_null(other);
 
     /* walk down the other set and do the adds individually */
-    for (var e : other)
+    for (symbol e : other)
       result = add(e) || result;
 
     return result;
@@ -172,7 +172,7 @@ public class symbol_set implements Iterable<symbol> {
     not_null(other);
 
     /* walk down the other set and do the removes individually */
-    for (var s : other)
+    for (symbol s : other)
       remove(s);
   }
 
@@ -212,7 +212,7 @@ public class symbol_set implements Iterable<symbol> {
     int result = 0;
 
     /* hash together codes from at most first 5 elements */
-    for (var s : this)
+    for (symbol s : this)
       result ^= s.hashCode();
 
     return result;
@@ -228,7 +228,7 @@ public class symbol_set implements Iterable<symbol> {
 
     result = "{";
     comma_flag = false;
-    for (var s : this) {
+    for (symbol s : this) {
       if (comma_flag)
         result += ", ";
       else

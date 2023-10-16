@@ -527,7 +527,7 @@ public class Main {
   protected static void check_unused() {
 
     /* check for unused terminals */
-    for (var term : terminal.all()) {
+    for (terminal term : terminal.all()) {
       /* don't issue a message for EOF */
       if (term == terminal.EOF)
         continue;
@@ -547,7 +547,7 @@ public class Main {
     }
 
     /* check for unused non terminals */
-    for (var nt:non_terminal.all()){
+    for (non_terminal nt:non_terminal.all()){
       /* is this one unused */
       if (nt.use_count() == 0) {
         /* count and warn if we are doing warnings */
@@ -613,7 +613,7 @@ public class Main {
       System.err.println("  Filling in tables...");
     action_table = new parse_action_table();
     reduce_table = new parse_reduce_table();
-    for (var lst:lalr_state.all_states()){
+    for (lalr_state lst:lalr_state.all_states()){
       lst.build_table_entries(action_table, reduce_table);
     }
 
@@ -846,7 +846,7 @@ public class Main {
     lalr_state ordered[] = new lalr_state[lalr_state.number()];
 
     /* put the states in sorted order for a nicer display */
-    for (var st : lalr_state.all_states()){
+    for (lalr_state st : lalr_state.all_states()){
       ordered[st.index()] = st;
     }
 

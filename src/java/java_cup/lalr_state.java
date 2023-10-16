@@ -187,14 +187,14 @@ public class lalr_state {
     }
 
     System.out.println("lalr_state [" + st.index() + "] {");
-    for (var itm : st.items()) {
+    for (lalr_item itm : st.items()) {
       System.out.print("  [");
       System.out.print(itm.the_production().lhs().the_symbol().name());
       System.out.print(" ::= ");
       for (int i = 0; i < itm.the_production().rhs_length(); i++) {
         if (i == itm.dot_pos())
           System.out.print("\u00B7 ");
-        var part = itm.the_production().rhs(i);
+        production_part part = itm.the_production().rhs(i);
         if (part.is_action())
           System.out.print("{action} ");
         else
@@ -219,7 +219,7 @@ public class lalr_state {
    */
   protected static void propagate_all_lookaheads() throws internal_error {
     /* iterate across all states */
-    for (var st : all_states())
+    for (lalr_state st : all_states())
       st.propagate_lookaheads();
   }
 
@@ -298,7 +298,7 @@ public class lalr_state {
     /* build item with dot at front of start production and EOF lookahead */
     start_items = new lalr_item_set();
 
-    var start_itm = new lalr_item(start_prod);
+    lalr_item start_itm = new lalr_item(start_prod);
     start_itm.lookahead().add(terminal.EOF);
 
     start_items.add(start_itm);
@@ -319,29 +319,29 @@ public class lalr_state {
     /* continue looking at new states until we have no more work to do */
     while (!work_stack.empty()) {
       /* remove a state from the work set */
-      var st = work_stack.pop();
+      lalr_state st = work_stack.pop();
 
       /* gather up all the symbols that appear before dots */
-      var outgoing = new symbol_set();
-      for (var itm : st.items()) {
+      symbol_set outgoing = new symbol_set();
+      for (lalr_item itm : st.items()) {
         /* add the symbol before the dot (if any) to our collection */
-        var sym = itm.symbol_after_dot();
+        symbol sym = itm.symbol_after_dot();
         if (sym != null)
           outgoing.add(sym);
       }
 
       /* now create a transition out for each individual symbol */
-      for (var sym : outgoing) {
+      for (symbol sym : outgoing) {
 
         /* will be keeping the set of items with propagate links */
-        var linked_items = new lalr_item_set();
+        lalr_item_set linked_items = new lalr_item_set();
 
         // gather up shifted versions of all the items that have this symbol before the
         // dot
-        var new_items = new lalr_item_set();
-        for (var itm : st.items()) {
+        lalr_item_set new_items = new lalr_item_set();
+        for (lalr_item itm : st.items()) {
           /* if this is the symbol we are working on now, add to set */
-          var sym2 = itm.symbol_after_dot();
+          symbol sym2 = itm.symbol_after_dot();
           if (sym.equals(sym2)) {
             /* add to the kernel of the new state */
             new_items.add(itm.shift());
@@ -353,7 +353,7 @@ public class lalr_state {
         /* use new items as state kernel */
         kernel = new lalr_item_set(new_items);
         /* have we seen this one already? */
-        var new_st = _all_kernels.get(kernel);
+        lalr_state new_st = _all_kernels.get(kernel);
 
         /* if we haven't, build a new state out of the item set */
         if (new_st == null) {
@@ -372,7 +372,7 @@ public class lalr_state {
         /* otherwise relink propagation to items in existing state */
         else {
           /* walk through the items that have links to the new state */
-          for (var fix_itm : linked_items) {
+          for (lalr_item fix_itm : linked_items) {
 
             /* look at each propagate link out of that item */
             for (int l = 0; l < fix_itm.propagate_items().size(); l++) {
@@ -410,7 +410,7 @@ public class lalr_state {
    */
   protected void propagate_lookaheads() throws internal_error {
     /* recursively propagate out from each item in the state */
-    for (var itm : items())
+    for (lalr_item itm : items())
       itm.propagate_lookaheads(null);
   }
 
@@ -439,17 +439,17 @@ public class lalr_state {
    * @param reduce_table the reduce-goto table to put entries in.
    */
   public void build_table_entries(parse_action_table act_table, parse_reduce_table reduce_table) throws internal_error {
-    var conflict_set = new terminal_set();
+    terminal_set conflict_set = new terminal_set();
 
     /* pull out our rows from the tables */
-    var our_act_row = act_table.under_state[index()];
-    var our_red_row = reduce_table.under_state[index()];
+    parse_action_row our_act_row = act_table.under_state[index()];
+    parse_reduce_row our_red_row = reduce_table.under_state[index()];
 
     /* consider each item in our state */
-    for (var itm : items()) {
+    for (lalr_item itm : items()) {
       /* if its completed (dot at end) then reduce under the lookahead */
       if (itm.dot_at_end()) {
-        var act = new reduce_action(itm.the_production());
+        reduce_action act = new reduce_action(itm.the_production());
 
         /* consider each lookahead symbol */
         for (int t = 0; t < terminal.number(); t++) {
@@ -463,7 +463,7 @@ public class lalr_state {
           } else {
             /* we now have at least one conflict */
             terminal term = terminal.find(t);
-            var other_act = our_act_row.under_term[t];
+            parse_action other_act = our_act_row.under_term[t];
 
             /* if the other act was not a shift */
             if ((other_act.kind() != parse_action.SHIFT) && (other_act.kind() != parse_action.NONASSOC)) {
@@ -490,9 +490,9 @@ public class lalr_state {
     /* consider each outgoing transition */
     for (lalr_transition trans = transitions(); trans != null; trans = trans.next()) {
       /* if its on an terminal add a shift entry */
-      var sym = trans.on_symbol();
+      symbol sym = trans.on_symbol();
       if (!sym.is_non_term()) {
-        var act = new shift_action(trans.to_state());
+        shift_action act = new shift_action(trans.to_state());
 
         /* if we don't already have an action put this one in */
         if (our_act_row.under_term[sym.index()].kind() == parse_action.ERROR) {
@@ -641,7 +641,7 @@ public class lalr_state {
     boolean after_itm;
 
     /* consider each element */
-    for (var itm : items()) {
+    for (lalr_item itm : items()) {
       /* clear the S/R conflict set for this item */
 
       /* if it results in a reduce, it could be a conflict */
@@ -650,7 +650,7 @@ public class lalr_state {
         after_itm = false;
 
         /* compare this item against all others looking for conflicts */
-        for (var compare : items()) {
+        for (lalr_item compare : items()) {
           /* if this is the item, next one is after it */
           if (itm == compare)
             after_itm = true;
@@ -727,7 +727,7 @@ public class lalr_state {
 
     int relevancecounter = 0;
     /* find and report on all items that shift under our conflict symbol */
-    for (var itm : items()) {
+    for (lalr_item itm : items()) {
 
       /* only look if its not the same item and not a reduce */
       if (itm != red_itm && !itm.dot_at_end()) {

@@ -624,14 +624,14 @@ public class emit {
 
     /* collect up the productions in order */
     all_prods = new production[production.number()];
-    for (var prod:production.all()){
+    for (production prod:production.all()){
       all_prods[prod.index()] = prod;
     }
 
     // make short[][]
     short[][] prod_table = new short[production.number()][2];
     for (int i = 0; i < production.number(); i++) {
-      var prod = all_prods[i];
+      production prod = all_prods[i];
       // { lhs symbol , rhs size }
       prod_table[i][0] = (short) prod.lhs().the_symbol().index();
       prod_table[i][1] = (short) prod.rhs_length();
@@ -818,12 +818,12 @@ public class emit {
     nchar = do_newline(out, nchar, nbytes);
     nbytes += do_escaped(out, (char) (sa.length & 0xFFFF));
     nchar = do_newline(out, nchar, nbytes);
-    for (var element:sa) {
+    for (short[] element:sa) {
       nbytes += do_escaped(out, (char) (element.length >> 16));
       nchar = do_newline(out, nchar, nbytes);
       nbytes += do_escaped(out, (char) (element.length & 0xFFFF));
       nchar = do_newline(out, nchar, nbytes);
-      for (var element2 : element) {
+      for (short element2 : element) {
         // contents of string are (value+2) to allow for common -1, 0 cases
         // (UTF-8 encoding is most efficient for 0<c<0x80)
         nbytes += do_escaped(out, (char) (2 + element2));

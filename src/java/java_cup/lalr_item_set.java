@@ -206,7 +206,7 @@ public class lalr_item_set implements Iterable<lalr_item> {
   public lalr_item get_one() throws internal_error {
     if (_all.values().size() == 0)
       return null;
-    var result = iterator().next();
+    lalr_item result = iterator().next();
     remove(result);
     return result;
   }
@@ -255,30 +255,30 @@ public class lalr_item_set implements Iterable<lalr_item> {
     hashcode_cache = null;
 
     /* each current element needs to be considered */
-    var consider = new lalr_item_set(this);
+    lalr_item_set consider = new lalr_item_set(this);
 
     /* repeat this until there is nothing else to consider */
     while (consider.size() > 0) {
       /* get one item to consider */
-      var itm = consider.get_one();
+      lalr_item itm = consider.get_one();
 
       /* do we have a dot before a non terminal */
-      var nt = itm.dot_before_nt();
+      non_terminal nt = itm.dot_before_nt();
       if (nt != null) {
         /* create the lookahead set based on first after dot */
-        var new_lookaheads = itm.calc_lookahead(itm.lookahead());
+        terminal_set new_lookaheads = itm.calc_lookahead(itm.lookahead());
 
         /* are we going to need to propagate our lookahead to new item */
-        var need_prop = itm.lookahead_visible();
+        boolean need_prop = itm.lookahead_visible();
 
         /* create items for each production of that non term */
-        for (var prod : nt.productions()) {
+        for (production prod : nt.productions()) {
 
           /* create new item with dot at start and that lookahead */
-          var new_itm = new lalr_item(prod, new terminal_set(new_lookaheads));
+          lalr_item new_itm = new lalr_item(prod, new terminal_set(new_lookaheads));
 
           /* add/merge item into the set */
-          var add_itm = add(new_itm);
+          lalr_item add_itm = add(new_itm);
           /* if propagation is needed link to that item */
           if (need_prop)
             itm.add_propagate(add_itm);
@@ -335,7 +335,7 @@ public class lalr_item_set implements Iterable<lalr_item> {
       // CSA fix! we'd *like* to hash just a few elements, but
       // that means equal sets will have inequal hashcodes, which
       // we're not allowed (by contract) to do. So hash them all.
-      for (var e : this)
+      for (lalr_item e : this)
         result ^= e.hashCode();
 
       hashcode_cache = Integer.valueOf(result);
@@ -352,7 +352,7 @@ public class lalr_item_set implements Iterable<lalr_item> {
     StringBuilder result = new StringBuilder();
 
     result.append("{\n");
-    for (var e : this)
+    for (lalr_item e : this)
       result.append("  " + e + "\n");
 
     result.append("}");
